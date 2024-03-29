@@ -13,8 +13,6 @@ namespace _7thLab_Task3
 
         private string _name;
         private int _pos;
-
-        public string Name { get { return _name; } }
         public int Pos { get { return _pos; } }
 
         public Person(string name, int pos)
@@ -33,9 +31,9 @@ namespace _7thLab_Task3
             private string _name;
             private Person[] _persons;
 
-            public string Name { get { return _name; } }
+            protected string Name { get { return _name; } }
 
-            public Person[] Persons { get { return _persons; } }
+            private Person[] Persons { get { return _persons; } }
 
             public Team(string name, Person[] persons)
             {
@@ -43,7 +41,7 @@ namespace _7thLab_Task3
                 _persons = persons;
             }
 
-            public int TeamPoints()
+            protected int TeamPoints()
             {
                 int points = 0;
                 foreach (Person person in Persons)
@@ -52,6 +50,48 @@ namespace _7thLab_Task3
                 }
                 return points;
             }
+            public static void Sort(Team[] teams)
+            {
+                int i = 1;
+                int j = i + 1;
+                while (i < teams.Length)
+                {
+                    if (i == 0 || teams[i].TeamPoints() <= teams[i - 1].TeamPoints())
+                    {
+                        i = j;
+                        i++;
+                    }
+                    else if (teams[i].TeamPoints() > teams[i - 1].TeamPoints())
+                    {
+                        Team temp = teams[i - 1];
+                        teams[i - 1] = teams[i];
+                        teams[i] = temp;
+                    }
+                    else if (teams[i].TeamPoints() == teams[i - 1].TeamPoints())
+                    {
+                        if (Favorite(teams[i]))
+                        {
+                            Team temp = teams[i];
+                            teams[i] = teams[i - 1];
+                            teams[i - 1] = temp;
+                        }
+                        else { continue; }
+                    }
+                }
+            }
+            static bool Favorite(Team team)
+            {
+                foreach (Person person in team.Persons)
+                {
+                    if (person.Pos == 1)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
             public virtual void Print() => Console.WriteLine($"Team: {Name} Points: {TeamPoints()}");
         }
 
@@ -123,56 +163,17 @@ namespace _7thLab_Task3
             teams[1] = new MaleTeam("White Team", teamWhite);
             teams[2] = new FemaleTeam("Blue Team", teamBlue);
 
-            Sort(teams);
+            Team.Sort(teams);
 
             teams[0].Print();
 
             Console.ReadLine();
 
         }
-        static void Sort(Team[] teams)
-        {
-            int i = 1;
-            int j = i + 1;
-            while (i < teams.Length)
-            {
-                if (i == 0 || teams[i].TeamPoints() <= teams[i - 1].TeamPoints())
-                {
-                    i = j;
-                    i++;
-                }
-                else if (teams[i].TeamPoints() > teams[i - 1].TeamPoints())
-                {
-                    Team temp = teams[i - 1];
-                    teams[i - 1] = teams[i];
-                    teams[i] = temp;
-                }
-                else if (teams[i].TeamPoints() == teams[i - 1].TeamPoints())
-                {
-                    if (Favorite(teams[i]))
-                    {
-                        Team temp = teams[i];
-                        teams[i] = teams[i - 1];
-                        teams[i - 1] = temp;
-                    }
-                    else { continue; }
-                }
-            }
-        }
-
-        private static bool Favorite(Team team)
-        {
-            foreach (Person person in team.Persons)
-            {
-                if (person.Pos == 1)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }
+   
+
 
 
 

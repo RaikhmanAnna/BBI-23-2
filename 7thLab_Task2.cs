@@ -10,18 +10,19 @@ namespace _7thLab_Task2
 
     class Program
     {
-        
+
         abstract class Person
         {
             private string _name;
             private int[] _grades;
             protected static int index = 0;
 
-            public string Name { get { return _name; } }
+            protected string Name { get { return _name; } }
             public Person(string name, int[] grades)
             {
                 _name = name;
                 _grades = grades;
+                index++;
             }
 
             public float AverageGrade()
@@ -59,19 +60,17 @@ namespace _7thLab_Task2
             public int ID { get { return _id; } }
             public Student(string name, int[] grades) : base(name, grades)
             {
-                index++;
                 _id = index;
-
             }
             public override void Print()
             {
                 if (AverageGrade() != 0)
                 {
-                    Console.WriteLine($"{Name,-20} {AverageGrade(),-10:F1} {ID,-10:F1}");
+                    Console.WriteLine($"{Name,-20} {AverageGrade(),-10:F1} {ID,-10}");
                 }
                 else
                 {
-                    Console.WriteLine($"{Name,-20}отчислен    {ID,-10:F1}");
+                    Console.WriteLine($"{Name,-20}отчислен    {ID,-10}");
                 }
             }
         }
@@ -87,8 +86,8 @@ namespace _7thLab_Task2
 
             GnomeSort(students);
 
-            Console.WriteLine("Name           Average Grade     ID");
-            Console.WriteLine("-------------------------------------");
+            Console.WriteLine("Name           Average Grade    ID");
+            Console.WriteLine("------------------------------------");
 
             foreach (Student student in students)
             {
