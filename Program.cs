@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-
-
 public abstract class Task
 {
     protected string text;
@@ -32,13 +29,13 @@ public class Task_2 : Task
         string[] words = text.Split(' ');
         for (int i = 0; i < words.Length - 1; i++)
         {
-            if (!Char.IsLetter(words[i][words[i].Length - 1]))
+            if (!Char.IsLetter(words[i][words[i].Length - 1])) //берёт слово и проверяет последний символ слова и если это не буква
             {
 
-                char[] word = words[i].ToCharArray(0, words[i].Length - 1);
-                string rest = words[i].Substring(words[i].Length - 1);
-                Array.Reverse(word);
-                words[i] = new string(word) + rest;
+                char[] word = words[i].ToCharArray(0, words[i].Length - 1); //переводит в массив символов с первого символа до последнего, но не берёт последний символ
+                string rest = words[i].Substring(words[i].Length - 1); //сохраняет последний символ 
+                Array.Reverse(word); //переворачивает массив элементов 
+                words[i] = new string(word) + rest; //перезаписывает слово с сохранённым символом
             }
             else
             {
@@ -62,7 +59,7 @@ public class Task_4 : Task
 
     public int Complexity()
     {
-        int countwords = text.Split( ' ', '.', ',', '!', '?' ).Length;
+        int countwords = text.Split(' ', '.', ',', '!', '?').Length;
         int countpunct = text.Count(char.IsPunctuation);
         int res = countwords + countpunct;
 
@@ -74,40 +71,54 @@ public class Task_4 : Task
         return Complexity().ToString();
     }
 }
-
 public class Task_6 : Task
 {
+
     public Task_6(string text) : base(text)
     {
     }
+    public struct SyllableCount
+    {
+        public int _syllables;
+        public int wordcount;
+    }
+
     public void Syllables()
     {
         text = text.ToLower();
-        string[] words = text.Split(' ', ',', '.', '!', '?');
-        Dictionary<int, int> syllableCount = new Dictionary<int, int>();
+        string[] words = text.Split(' ', '.', ',', '!', '?');
+        List<SyllableCount> Count = new List<SyllableCount>();
 
         foreach (string word in words)
         {
-            if (word.Length > 0) 
+            if (word.Length > 0)
             {
                 int syllables = CountSyllables(word);
-                if (syllableCount.ContainsKey(syllables))
+                var syllablecount = Count.FirstOrDefault(x => x._syllables == syllables);
+                bool ishere = false;
+                int k = 0;
+                for(int i = 0; i < Count.Count; i++)
                 {
-                    syllableCount[syllables]++;
+                    if (Count[i]._syllables == syllablecount._syllables)
+                    { ishere = true; k = i; }
+                }
+                if (!ishere)
+                {
+                    Count.Add(new SyllableCount { _syllables = syllables, wordcount = 1 });
                 }
                 else
                 {
-                    syllableCount[syllables] = 1;
+                    syllablecount.wordcount++;
+                    Count[k] = syllablecount;
                 }
             }
         }
 
-        foreach (var pair in syllableCount)
+        foreach (var pair in Count)
         {
-            Console.WriteLine($"Количество слог: {pair.Key}, количество слов {pair.Value}.");
+            Console.WriteLine($"Количество слог: {pair._syllables}, количество слов {pair.wordcount}.");
         }
     }
-
     static int CountSyllables(string word)
     {
         string vowels = "аеёиоуыэюяaeiouy";
@@ -129,14 +140,14 @@ public class Task_6 : Task
                 prevVowel = false;
             }
         }
-        if (count == 0 && word.Length > 0)//одиночные гласные
+        if (count == 0 && word.Length > 0)
         {
             count++;
         }
 
         return count;
     }
-
+   
 }
 
 public class Task_8 : Task
@@ -144,57 +155,52 @@ public class Task_8 : Task
     public Task_8(string text) : base(text)
     {
     }
-    public void SplitText(int m)
+    public void SplitText(int width)
     {
         string[] words = text.Split(' ');
-        List<string> lines = new List<string>();
+        List<string> lines = new List<string>(); //лист сохраняет линии
         string currentline = " ";
 
         foreach (string word in words)
         {
-            if ((currentline + word).Length + 1 <= m)
+            if ((currentline + word).Length + 1 <= width) //проверяет можно ли добавить слово, 1 - пробел после слова
             {
                 currentline += word + " ";
             }
-            else
+            else //если не можем добавить слово
             {
-                lines.Add(currentline.Trim());
-                currentline = word + " ";
+                lines.Add(currentline.Trim()); //добавляет предложение в лист
+                currentline = word + " "; //новая строка
             }
         }
 
-        lines.Add(currentline.Trim());
+        lines.Add(currentline.Trim()); //чтобы добавить последнюю строку текста
 
-        foreach (string line in lines)
+        foreach (string line in lines) //перебираем лист
         {
             string[] linewords = line.Split(' ');
-            int wordslength = linewords.Sum(word => word.Length);
-            int numSpaces = linewords.Length - 1;
+            int wordslength = linewords.Sum(word => word.Length); //суммирует длину всех слов
+            int sumSpaces = linewords.Length - 1; //количество пробелов кооторые есть сейчас
 
-            if (numSpaces != 0)
+            if (sumSpaces != 0)
             {
-                int numberspaces = m - wordslength;
-                int basespace = numberspaces / numSpaces;
-                int extraSpaces = numberspaces % numSpaces;
+                int numberspaces = width - wordslength; //необходимые пробелы
+                int basespace = numberspaces / sumSpaces;//доп пробелы между словами
+                int extraSpaces = numberspaces % sumSpaces; //остаточные доп пробелы
 
                 string formattedLine = "";
-                for (int i = 0; i < linewords.Length - 1; i++)
+                for (int i = 0; i < linewords.Length - 1; i++)//убирает последнее слово, чтобы оно было замыкающим
                 {
-                    formattedLine += linewords[i] + new string(' ', basespace);
+                    formattedLine += linewords[i] + new string(' ', basespace); //пробелы и их количество
                     if (extraSpaces > 0)
                     {
-                        formattedLine += " ";
+                        formattedLine += " "; //добавляет в конец строки
                         extraSpaces--;
                     }
                 }
-                formattedLine += linewords[linewords.Length - 1];
+                formattedLine += linewords[linewords.Length - 1]; //обратно добавляет последнее слово
                 Console.WriteLine(formattedLine);
             }
-            //    else
-            //    {
-            //        Console.WriteLine("Error!");
-            //    }
-            //}
         }
     }
 
@@ -232,8 +238,8 @@ public class Task_9 : Task
         {
             if (char.IsLetter(text[i]) && char.IsLetter(text[i + 1]))
             {
-                var sequence = text.Substring(i, 2);
-                if (!pairs.ContainsKey(sequence))
+                var sequence = text.Substring(i, 2); //разделяет на пары
+                if (!pairs.ContainsKey(sequence))//если в словаре нет последовательности, то добавляет новую пару
                 {
                     pairs[sequence] = 0;
                 }
@@ -241,12 +247,12 @@ public class Task_9 : Task
             }
         }
 
-        var topSequences = pairs.OrderByDescending(x => x.Value).Take(5).ToList();
+        var topSequences = pairs.OrderByDescending(x => x.Value).Take(5).ToList(); //сортирует пары по убыванию частоты вхождения и выбирает пять самых частых пар.
         char code = '[';
         foreach (var sequence in topSequences)
         {
-            symbols[sequence.Key] = code.ToString();
-            text = text.Replace(sequence.Key, code.ToString());
+            symbols[sequence.Key] = code.ToString(); //меняет буквы на код
+            text = text.Replace(sequence.Key, code.ToString()); //меняет текст
             code++;
         }
         newtext = text;
@@ -279,11 +285,11 @@ class Task_10 : Task
         return firsttext;
     }
 
-    public void ParseText(string text)
+    public void ParseText(string firsttext)
     {
         foreach (var codePair in symbols)
         {
-            firsttext = firsttext.Replace(codePair.Value, codePair.Key);
+            firsttext = firsttext.Replace(codePair.Value, codePair.Key);//заменяет знак на соответствующую пару букв
         }
     }
 }
@@ -295,7 +301,7 @@ class Program
         string text = "Первое кругосветное путешествие было осуществлено флотом, возглавляемым португальским исследователем Фернаном Магелланом. Путешествие началось 20 сентября 1519 года, когда флот, состоящий из пяти кораблей и примерно 270 человек, отправился из порту Сан-Лукас в Испании. Хотя Магеллан не закончил свое путешествие из-за гибели в битве на Филиппинах в 1521 году, его экспедиция стала первой, которая успешно обогнула Землю и доказала ее круглую форму. Это путешествие открыло новые морские пути и имело огромное значение для картографии и географических открытий. ";
         //string text = "Привет всем.";
         Task_2 task2 = new Task_2(text);
-        string rr = task2.Encrypt(text);
+        string rr = task2.Encrypt(text); //сохраняем перевёрнутый текст, чтобы опять перевернуть 
         Console.WriteLine("Зашифрованное сообщение: " + task2.Encrypt(text));
         Console.WriteLine();
         Console.WriteLine("Расшифрованное сообщение: " + task2.Encrypt(rr));
@@ -331,12 +337,6 @@ class Program
         Console.ReadKey();
     }
 }
-
-
-
-
-
-
 
 
 
