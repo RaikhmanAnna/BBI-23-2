@@ -1,23 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json.Serialization;
+using _7thLab_Task2.Serializers;
 
 namespace _7thLab_Task2
 {
-
-    class Program
+    public class Program
     {
-
-        abstract class Person
+        public class Person
         {
             private string _name;
-            private int[] _grades;
+            protected int[] _grades;
             protected static int index = 0;
 
-            protected string Name { get { return _name; } }
+            public string Name { get { return _name; } set { _name = value; } }
+            public int[] Grades { get { return _grades; } set { _grades = value; } }
+            public static int Index { get { return index; } }
+
+            public Person() 
+            {
+
+            }
+
+            [JsonConstructor]
             public Person(string name, int[] grades)
             {
                 _name = name;
@@ -54,13 +59,21 @@ namespace _7thLab_Task2
             }
         }
 
-        class Student : Person
+        public class Student : Person
         {
             private int _id;
-            public int ID { get { return _id; } }
+            public int ID { get { return _id; }
+                set { _id = value; }
+                    }
+
+            public Student() : base()
+            {
+                
+            }
             public Student(string name, int[] grades) : base(name, grades)
             {
                 _id = index;
+
             }
             public override void Print()
             {
@@ -86,14 +99,29 @@ namespace _7thLab_Task2
 
             GnomeSort(students);
 
-            Console.WriteLine("Name           Average Grade    ID");
-            Console.WriteLine("------------------------------------");
-
-            foreach (Student student in students)
+            MySerializers[] serializers = new MySerializers[2] { new MyJsonSerializer(), new MyXmlSerializer() };
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "9Lab2");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            string[] files = new string[2]
             {
-                student.Print();
+                "first.json",
+                "second.xml"
+            };
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                serializers[i].Write<Student[]>(students, Path.Combine(path, files[i]));
             }
 
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                students = serializers[i].Read<Student[]>(Path.Combine(path, files[i]));
+                Console.WriteLine("Name           Average Grade    ID");
+                Console.WriteLine("------------------------------------");
+                foreach (Student student in students)
+                {
+                    student.Print();
+                }
+            }
             Console.ReadLine();
 
 

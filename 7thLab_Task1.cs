@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
+using _7thLab_Task1.Serialize;
 
 namespace _7thLab_Task1
 {
-    class Member
+    public class Member
     {
         private string _firstName;
         private string _secondName;
@@ -24,9 +24,36 @@ namespace _7thLab_Task1
                     _firstName = value;
             }
         }
+        public string FirstName
+        {
+            get { return _firstName; }
+            set { _firstName = value; }
+        }
 
+        public string SecondName
+        {
+            get { return _secondName; }
+            set { _secondName = value; }
+        }
+        public float Res1
+        {
+            get { return _res1; }
+            set { _res1 = value; } 
+        }
+
+        public float Res2
+        {
+            get { return _res2; }
+            set { _res2 = value; } 
+        }
         public float BestRes { get { return _res1 > _res2 ? _res1 : _res2; } }
 
+        public Member()
+        {
+           
+        }
+
+        [JsonConstructor]
         public Member(string firstName, string secondName, float res1, float res2)
         {
             _firstName = firstName;
@@ -35,6 +62,7 @@ namespace _7thLab_Task1
             _res2 = res2;
             _disqualified = false;
         }
+
         public void Disqualification(bool status)
         {
             if (!_disqualified)
@@ -51,9 +79,8 @@ namespace _7thLab_Task1
         }
     }
 
-    class Program
+    internal class Program
     {
-
         static void Main()
         {
             Member[] members = new Member[4];
@@ -66,13 +93,28 @@ namespace _7thLab_Task1
 
             GnomeSort(members);
 
-            Console.WriteLine("Name          Result1   Result2   BestResult");
-            Console.WriteLine("----------------------------------------------");
-
-
-            foreach (Member member in members)
+            MySerializers[] serializers = new MySerializers[2] { new MyJsonSerializer(), new MyXmlSerializer() };
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "9Lab");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            string[] files = new string[2]
             {
-                member.Print();
+                "first.json",
+                "second.xml"
+            };
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                serializers[i].Write<Member[]>(members, Path.Combine(path, files[i]));
+            }
+
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                members = serializers[i].Read<Member[]>(Path.Combine(path, files[i]));
+                Console.WriteLine("Name          Result1   Result2   BestResult");
+                Console.WriteLine("----------------------------------------------");
+                foreach (Member member in members)
+                {
+                    member.Print();
+                }
             }
             Console.ReadLine();
         }
@@ -98,3 +140,4 @@ namespace _7thLab_Task1
         }
     }
 }
+

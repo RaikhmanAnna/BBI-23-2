@@ -1,20 +1,27 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using _7thLab_Task3.Serializer;
 
 namespace _7thLab_Task3
 {
-
-    class Person
+    public class Person
     {
 
         private string _name;
         private int _pos;
-        public int Pos { get { return _pos; } }
 
+        public string Name { get { return _name; } set { _name = value; } }
+        public int Pos { get { return _pos; } set { _pos = value; } }
+
+        public Person() 
+        {
+
+        }
         public Person(string name, int pos)
         {
             _name = name;
@@ -23,18 +30,21 @@ namespace _7thLab_Task3
 
     }
 
-    class Program
+    public class Program
     {
-        abstract class Team
+        public class Team
         {
 
             private string _name;
             private Person[] _persons;
 
-            protected string Name { get { return _name; } }
+            public string Name { get { return _name; } set { _name = value; } }
+            public Person[] Persons { get { return _persons; } set { _persons = value; } }
 
-            private Person[] Persons { get { return _persons; } }
+            public Team()
+            {
 
+            }
             public Team(string name, Person[] persons)
             {
                 _name = name;
@@ -90,16 +100,21 @@ namespace _7thLab_Task3
                 }
                 return false;
             }
-
-
             public virtual void Print() => Console.WriteLine($"Team: {Name} Points: {TeamPoints()}");
         }
 
-        class MaleTeam : Team
+        public class MaleTeam : Team
         {
             private string _name;
             private Person[] _persons;
 
+            //public string Name { get { return _name; } set { _name = value; } }
+            //public Person[] Persons { get { return _persons; } set { _persons = value; } }
+
+            public MaleTeam()
+            {
+
+            }
             public MaleTeam(string name, Person[] persons) : base(name, persons)
             {
                 _name = name;
@@ -111,11 +126,17 @@ namespace _7thLab_Task3
             }
 
         }
-        class FemaleTeam : Team
+        public class FemaleTeam : Team
         {
             private string _name;
             private Person[] _persons;
 
+            //public string Name { get { return _name; } set { _name = value; } }
+
+            public FemaleTeam()
+            {
+
+            }
             public FemaleTeam(string name, Person[] persons) : base(name, persons)
             {
                 _name = name;
@@ -158,15 +179,33 @@ namespace _7thLab_Task3
             teamBlue[4] = new Person("Ley", 17);
             teamBlue[5] = new Person("Pop", 13);
 
-            Team[] teams = new Team[3];
+            MaleTeam[] teams = new MaleTeam[3];
             teams[0] = new MaleTeam("Black Team", teamBlack);
             teams[1] = new MaleTeam("White Team", teamWhite);
-            teams[2] = new FemaleTeam("Blue Team", teamBlue);
+            teams[2] = new MaleTeam("Blue Team", teamBlue);
 
             Team.Sort(teams);
 
-            teams[0].Print();
+            MySerializers[] serializers = new MySerializers[2] { new MyJsonSerializer(), new MyXmlSerializer() };
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "9Lab3");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            string[] files = new string[2]
+            {
+                "first.json",
+                "second.xml"
+            };
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                serializers[i].Write<MaleTeam[]>(teams, Path.Combine(path, files[i]));
+            }
 
+            for (int i = 0; i < serializers.Length; i++)
+            {
+                teams = serializers[i].Read<MaleTeam[]>(Path.Combine(path, files[i]));
+                Console.WriteLine("Name          Result1   Result2   BestResult");
+                Console.WriteLine("----------------------------------------------");
+                teams[0].Print();
+            }
             Console.ReadLine();
 
         }
